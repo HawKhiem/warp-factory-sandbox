@@ -9,11 +9,14 @@ them into pull requests.
 
 | Method | Path          | Description                 |
 |--------|---------------|-----------------------------|
-| GET    | `/todos`      | List todos (`page`, `size`) |
+| GET    | `/todos`      | List todos (`page`, `size`, optional `done=true` or `done=false`) |
 | POST   | `/todos`      | Create a todo (`{ title }`) |
 | GET    | `/todos/:id`  | Get one todo                |
 | PATCH  | `/todos/:id`  | Mark a todo done            |
 | DELETE | `/todos/:id`  | Delete a todo               |
+
+Status filtering applies before pagination; `total` counts matching todos.
+Other `done` values return 400.
 
 ## Local development
 

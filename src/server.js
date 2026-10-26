@@ -25,7 +25,13 @@ export function createServer(store = new TodoStore()) {
       if (req.method === 'GET' && id === undefined) {
         const page = Number(url.searchParams.get('page') ?? 1);
         const size = Number(url.searchParams.get('size') ?? 10);
-        return send(res, 200, paginate(store.list(), page, size));
+        const done = url.searchParams.get('done');
+        if (done !== null && done !== 'true' && done !== 'false') {
+          return send(res, 400, { error: 'done must be true or false' });
+        }
+        const todos = store.list();
+        const filtered = done === null ? todos : todos.filter((todo) => todo.done === (done === 'true'));
+        return send(res, 200, paginate(filtered, page, size));
       }
       if (req.method === 'GET') {
         const todo = store.get(id);
