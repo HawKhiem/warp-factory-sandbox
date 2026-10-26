@@ -9,7 +9,7 @@ export function slugify(title) {
 
 // Return one page of items. Pages are 1-based.
 export function paginate(items, page = 1, size = 10) {
-  const start = page * size;
+  const start = (page - 1) * size;
   return {
     page,
     size,
