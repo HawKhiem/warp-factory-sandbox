@@ -2,9 +2,12 @@
 export function slugify(title) {
   return title
     .toLowerCase()
-    .trim()
-    .replace(/ /g, '-')
-    .replace(/[^a-z0-9-]/g, '');
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 // Return one page of items. Pages are 1-based.
