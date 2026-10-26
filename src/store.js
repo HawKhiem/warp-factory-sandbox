@@ -5,20 +5,23 @@ export class TodoStore {
   constructor() {
     this.todos = [];
     this.nextId = 1;
+    this.lastCreatedAt = -Infinity;
   }
 
   create(title) {
     if (typeof title !== 'string' || title.trim() === '') {
       throw new Error('title is required');
     }
+    const createdAt = Math.max(Date.now(), this.lastCreatedAt + 1);
     const todo = {
       id: this.nextId++,
       title: title.trim(),
       slug: slugify(title),
       done: false,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(createdAt).toISOString(),
     };
     this.todos.push(todo);
+    this.lastCreatedAt = createdAt;
     return todo;
   }
 
