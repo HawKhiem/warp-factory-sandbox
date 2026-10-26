@@ -14,3 +14,9 @@ them into pull requests.
 | GET    | `/todos/:id`  | Get one todo                |
 | PATCH  | `/todos/:id`  | Mark a todo done            |
 | DELETE | `/todos/:id`  | Delete a todo               |
+
+## Evaluation
+
+- `factory/`: the Warp Factories definition used for the evaluation
+- `eval/RUNBOOK.md`: how the evaluation is run
+- `eval/scorecard.csv`: results per issue

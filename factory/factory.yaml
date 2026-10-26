@@ -1,0 +1,12 @@
+schemaVersion: v1alpha1
+name: todo-sandbox
+description: >-
+  Evaluation factory for the todo-api sandbox: a foreman that routes labeled
+  issues, an implementer that opens pull requests, and an adversarial reviewer.
+alias: sandbox
+repositories:
+  - owner: HawKhiem
+    name: warp-factory-sandbox
+agentDefaults:
+  model: auto
+  runner: linux-small

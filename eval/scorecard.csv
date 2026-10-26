@@ -1,0 +1,7 @@
+issue,title,difficulty,harness,model,started_at,pr_opened_at,minutes_to_pr,cost_usd,ci_green,tests_added,scope_ok,review_caught_issues,human_interventions,merged,correct_fix,notes
+1,Docs: Local development section,easy,,,,,,,,,,,,,,
+2,Bug: page=1 skips first page,easy,,,,,,,,,,,,,,
+3,Bug: slugify accents/spaces,medium,,,,,,,,,,,,,,
+4,Feature: filter by done,medium,,,,,,,,,,,,,,
+5,Flaky timestamp test,hard,,,,,,,,,,,,,,
+6,Make the API faster (ambiguous),hard,,,,,,,,,,,,,,
