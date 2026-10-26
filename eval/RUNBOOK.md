@@ -1,39 +1,95 @@
-# Evaluation runbook
+# Benchmark runbook
 
-How to run the Warp Factories evaluation against this repo. Record every run
-in `scorecard.csv`.
+Step-by-step instructions for running the six-issue benchmark against a
+software factory, and for checking its work. It was first used for Warp
+Factories (results in the [README](../README.md)); the same steps work for any
+provider that turns GitHub issues into pull requests.
 
-## 0. One-time setup
-1. `bash eval/setup-github.sh` creates the private GitHub repo, labels and
-   six seeded issues.
-2. Sign in at https://platform.warp.dev with a Warp account and create a team
-   if prompted. If Factories is gated for your account, request access at
-   https://www.warp.dev/factories/request-access and stop here.
-3. Click **+** next to Factories → connect GitHub → pick this repo → name the
-   factory `sandbox` → keep the Code agent enabled.
-4. Note how long steps 2–3 took (Warp claims about 5 minutes).
+## 1. Create a clean copy of the sandbox
 
-## 1. Smoke test (web chat)
-New Chat → choose `sandbox` → send:
-> Add a "Local development" section to README.md summarizing CONTRIBUTING.md.
-> Only change README.md. Run npm run lint and npm test. Open a pull request.
+Every provider gets its **own private repo** created from the `baseline` tag.
+`main` in this repo contains the review, the answer key and the merged fixes,
+so pointing a factory at it would leak the answers.
 
-Follow it under **Runs**; answer anything that lands in the **Inbox**.
+```sh
+git fetch --tags
+bash eval/new-provider-run.sh <provider>      # e.g. tessl, factory, vercel
+```
 
-## 2. Issue-driven runs
-1. Mirror the definition in `factory/` in the web app's definition editor
-   (or link the factory to GitHub; that needs the Build plan).
-2. Add the `factory-ready` label to issues 2–6, one at a time. Wait for each
-   PR before the next, so costs can be attributed per issue.
-3. Review each PR yourself before merging.
+This clones `baseline` into a temp folder, creates
+`HawKhiem/factory-sandbox-<provider>` (set `OWNER=...` to use another account),
+pushes it, and seeds the labels and six issues. Check that the six issues are
+open before you start.
 
-## 3. Optional: harness comparison (Build plan)
-Re-run issues 2–5 with the implementer on the Claude Code harness (see
-warpdotdev/warp-factory-examples `03-multi-harness`) and compare cost,
-time and correctness.
+## 2. Connect the factory
 
-## What to capture per run
-- Time from label to PR; cost from the run details or the dashboard
-- CI result; whether tests were added; whether the diff stayed in scope
-- What the reviewer agent flagged; how many times you had to step in
-- Screenshots of the dashboard and inbox for the team review
+Connect the provider to the new repo with **default settings**. Don't edit its
+agent instructions: the point is to see how it behaves out of the box.
+Note how long setup takes and whether it needs a prepaid balance or a plan.
+
+If the provider bills from a balance, load a small amount and **turn off
+auto-reload**. $20 of usage was enough for all six issues on Warp.
+
+## 3. Send the issues
+
+Send each issue on its own, in a **new chat or thread**, with exactly this
+prompt and nothing else:
+
+> Fix GitHub issue #N in this repo. Open a pull request that resolves it.
+
+- Wait for each run to finish before starting the next, so costs can be
+  attributed per issue. Write down the balance before and after each run.
+- If the factory asks a question, record it before answering. For #6, answer:
+  > There's no specific complaint behind this issue. Measure first. If nothing
+  > is meaningfully slow, don't change any code: post your measurements as a
+  > comment on issue #6 and recommend closing it.
+- Merge each PR before sending the next issue, so later fixes start from the
+  merged code. #3 and #2 touch the same file.
+
+## 4. Check every PR yourself
+
+Don't trust the factory's own "tests pass". For each PR, before merging it:
+
+```sh
+git fetch origin main pull/<PR>/head:pr-<PR>
+git worktree add ../pr-<PR> pr-<PR>
+cd ../pr-<PR>
+
+node --test                                            # 1. new tests pass with the fix
+git checkout "$(git merge-base HEAD origin/main)" -- src  # 2. put the old code back
+node --test                                            # 3. new tests should now FAIL
+git checkout HEAD -- src                               # restore
+
+cd - && git worktree remove --force ../pr-<PR> && git branch -D pr-<PR>
+```
+
+Step 3 is the important one: tests that still pass on the old code don't catch
+the bug. For #5 (the flaky test), also run the whole suite 40 times; it should
+never fail:
+
+```sh
+for i in $(seq 1 40); do node --test >/dev/null 2>&1 || echo FAIL; done
+```
+
+Then compare the diff with [answer-key.md](answer-key.md): right root cause,
+stayed in scope, no red flags.
+
+## 5. Record the result
+
+Add one row per issue to a copy of [scorecard.csv](scorecard.csv):
+
+| Column | What to write |
+|---|---|
+| `harness`, `model` | Which coding agent and model ran it (provider default if not shown) |
+| `minutes_to_pr` | Time from sending the prompt to the PR (or final answer) |
+| `cost_usd` | Balance before minus balance after, or the provider's per-PR cost |
+| `ci_green` | CI result on the PR (the flaky test fails ~1 in 5 runs until #5 is fixed) |
+| `tests_added` | Did it add tests for the changed behaviour? |
+| `scope_ok` | Did the diff stay within the issue? |
+| `review_caught_issues` | What its own review step flagged, if it has one |
+| `human_interventions` | How many times you had to step in |
+| `correct_fix` | Your verdict after step 4 and the answer key |
+| `notes` | Anything surprising, good or bad |
+
+Take screenshots of anything worth showing the team: questions it asked,
+hand-off messages, the cost dashboard.
