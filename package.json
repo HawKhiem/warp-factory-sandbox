@@ -1,0 +1,16 @@
+{
+  "name": "todo-api",
+  "version": "0.1.0",
+  "description": "Tiny todo HTTP API used as a sandbox for evaluating Warp Factories.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "lint": "node scripts/lint.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
