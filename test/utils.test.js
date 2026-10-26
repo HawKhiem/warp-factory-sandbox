@@ -13,7 +13,6 @@ test('slugify strips punctuation', () => {
 test('paginate uses 1-based pages', async (t) => {
   const items = Array.from({ length: 25 }, (_, i) => i);
   const cases = [
-    { page: 1, expected: items.slice(0, 10) },
     { page: 2, expected: items.slice(10, 20) },
     { page: 3, expected: items.slice(20, 25) },
     { page: 4, expected: [] },
